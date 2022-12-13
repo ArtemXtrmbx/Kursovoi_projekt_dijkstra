@@ -1,0 +1,216 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include<stdio.h>
+#include<conio.h>
+#include <iostream>
+#include <Windows.h>
+
+#define INFINITY 9999
+#define MAX 100
+FILE* Rezultat_1,Rezultat_2,Rezultat_3;
+char RezultatQ[20];
+int** G;
+int n;
+int u;
+
+
+void dijkstra(int startnode)
+{
+
+	int cost[MAX][MAX], distance[MAX], pred[MAX];
+	int visited[MAX], count, mindistance, nextnode, i, j;
+	//pred[] хранит предшественника каждого узла
+	//count дает количество узлов, просмотренных на данный момент
+	//создайте матрицу смежности
+	for (int i = 0; i < n; i++)
+	{
+		for (int j = 0; j < n; j++)
+		{
+			if (G[i][j] == 0)
+			{
+				cost[i][j] = INFINITY;
+			}
+			else
+			{
+				cost[i][j] = G[i][j];
+			}
+		}
+	}
+
+
+	//инициализировать pred[],distance[] и visited[]
+	for (i = 0; i < n; i++)
+	{
+		distance[i] = cost[startnode][i];
+		pred[i] = startnode;
+		visited[i] = 0;
+	}
+	distance[startnode] = 0;
+	visited[startnode] = 1;
+	count = 1;
+	while (count < n - 1)
+	{
+		mindistance = INFINITY;
+		//следующий узел дает узел на минимальном расстоянии
+		for (i = 0; i < n; i++)
+			if (distance[i] < mindistance && !visited[i])
+			{
+				mindistance = distance[i];
+				nextnode = i;
+			}
+		//проверьте, существует ли лучший путь через следующий узел
+		visited[nextnode] = 1;
+		for (i = 0; i < n; i++)
+			if (!visited[i])
+				if (mindistance + cost[nextnode][i] < distance[i])
+				{
+					distance[i] = mindistance + cost[nextnode][i];
+					pred[i] = nextnode;
+				}
+		count++;
+	}
+
+	//выведите путь и расстояние до каждого узла
+
+
+	for (i = 0; i < n; i++)
+		if (i != startnode)
+		{
+			printf("\nРасстояние до узла%d=%d", i, distance[i]);
+			printf("\nПуть=%d", i);
+			j = i;
+			do
+			{
+				j = pred[j];
+				printf("<-%d", j);	
+			} while (j != startnode);
+
+		}
+	printf("\n");
+	printf("Введите имя файла, в который хотите записать ответ:\n");
+	scanf("%s",&RezultatQ, 20);
+
+	Rezultat_1 = fopen(RezultatQ, "w+");
+
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < n; j++) {
+
+			fprintf(Rezultat_1, "%d\t", G[i][j]);
+		}
+		fprintf(Rezultat_1, "\n");
+	}
+
+
+
+
+	for (i = 0; i < n; i++)
+		if (i != startnode)
+		{
+			fprintf(Rezultat_1, "\nRasstoianie do uzla % d = % d", i, distance[i]);
+			fprintf(Rezultat_1, "\nPut=%d", i);
+			j = i;
+			do
+			{		
+				j = pred[j];
+				fprintf(Rezultat_1,"<-%d", j);
+			} while (j != startnode);
+
+		}
+	printf("Результат записан!\n");
+	fclose(Rezultat_1);
+
+
+
+}
+
+void ruchnoivvod() {
+	//int u;
+	printf("Введите количество вершин:");
+	scanf("%d", &n);
+	printf("\nВведите матрицу смежности:\n");
+
+	G = (int**)malloc(n * sizeof(int*));
+	for (int i = 0; i < n; ++i) {
+		G[i] = (int*)malloc(n * sizeof(int));
+	}
+
+
+	for (int i = 0; i < n; ++i) {
+		for (int j = 0; j < n; ++j) {
+			scanf_s("%d", &G[i][j]);
+		}
+		printf("\n");
+
+	}
+
+
+	//вывод матрицы:
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < n; j++) {
+
+			printf("%d\t", G[i][j]);
+		}
+		printf("\n");
+	}
+	printf("\nВведите начальный узел:");
+	scanf("%d", &u);
+}
+void autovvod() {
+	srand(time(NULL));
+
+	printf("Введите количество вершин:");
+	scanf_s("%d", &n);
+
+	G = (int**)malloc(n * sizeof(int*));
+	for (int i = 0; i < n; ++i) {
+		G[i] = (int*)malloc(n * sizeof(int));
+	}
+
+	for (int i = 0; i < n; ++i) {
+		for (int j = i; j < n; ++j) {
+			G[i][j] = rand() % 20;
+			if (i == j) {
+				G[i][j] = 0;
+			}
+			G[j][i] = G[i][j];
+		}
+	}
+	//вывод матрицы смежности:
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < n; j++) {
+
+			printf("%d\t", G[i][j]);
+		}
+		printf("\n");
+	}
+	printf("\nВведите начальный узел:");
+	scanf("%d", &u);
+}
+
+int main()
+{
+	setlocale(LC_ALL, "Russian");
+	SetConsoleCP(866);
+	printf("\n1 - Построить граф автоматически\n2 - Построить граф вручную\n3 - выход\n\n");
+	while (true) {
+		int l = _getch();
+		switch (l) {
+		case '1':
+
+			autovvod();
+			dijkstra(u);
+			break;
+		case '2':
+
+			ruchnoivvod();
+			dijkstra(u);
+			break;
+		case '3':
+			exit(1);
+			break;
+		default:
+			break;
+		}
+	}
+
+	return 0;
+}
